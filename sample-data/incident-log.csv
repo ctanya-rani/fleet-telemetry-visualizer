@@ -1,0 +1,10 @@
+timestamp,device_id,event_type,code,severity,message
+2026-07-16T08:02:11Z,van-03,FAULT,ENG_TEMP_HIGH,warning,"Engine temperature above threshold (104C)"
+2026-07-16T08:14:05Z,van-03,FAULT,ENG_TEMP_CRIT,critical,"Engine temperature 121C — driver alerted, derate engaged"
+2026-07-16T08:31:44Z,van-03,RECOVERY,ENG_TEMP_CRIT_CLEAR,info,"Temperature back in range after coolant top-up"
+2026-07-16T08:45:12Z,drone-02,FAULT,BATT_LOW,warning,"Battery charge 18%, returning to base"
+2026-07-16T08:58:03Z,drone-02,RECOVERY,BATT_LOW_CLEAR,info,"Battery swapped at base station"
+2026-07-16T09:05:52Z,truck-01,FAULT,COMMS_DEGRADED,serious,"Uplink packet loss 22%"
+2026-07-16T09:12:18Z,truck-01,FAULT,COMMS_LOST,critical,"Uplink lost — last known position stored"
+2026-07-16T09:40:57Z,truck-01,RECOVERY,COMMS_LOST_CLEAR,info,"Uplink restored, 41 buffered records flushed"
+2026-07-16T10:20:09Z,van-03,FAULT,GPS_DRIFT,warning,"GPS position variance 48m, urban canyon suspected"

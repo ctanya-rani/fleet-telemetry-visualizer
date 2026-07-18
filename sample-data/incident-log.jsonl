@@ -1,0 +1,18 @@
+{"ts":"2026-07-16T07:55:00Z","device":"van-03","type":"INFO","code":"UNIT_ONLINE","severity":"info","msg":"Recorder session started"}
+{"ts":"2026-07-16T07:55:02Z","device":"truck-01","type":"INFO","code":"UNIT_ONLINE","severity":"info","msg":"Recorder session started"}
+{"ts":"2026-07-16T07:55:05Z","device":"drone-02","type":"INFO","code":"UNIT_ONLINE","severity":"info","msg":"Recorder session started"}
+{"ts":"2026-07-16T07:55:07Z","device":"sensor-hub-01","type":"INFO","code":"UNIT_ONLINE","severity":"info","msg":"Recorder session started"}
+{"ts":"2026-07-16T08:02:11Z","device":"van-03","type":"FAULT","code":"ENG_TEMP_HIGH","severity":"warning","msg":"Engine temperature above threshold (104C)"}
+{"ts":"2026-07-16T08:06:40Z","device":"van-03","type":"FAULT","code":"ENG_TEMP_HIGH","severity":"warning","msg":"Engine temperature 108C, coolant flow low"}
+{"ts":"2026-07-16T08:14:05Z","device":"van-03","type":"FAULT","code":"ENG_TEMP_CRIT","severity":"critical","msg":"Engine temperature 121C — driver alerted, derate engaged"}
+{"ts":"2026-07-16T08:19:30Z","device":"van-03","type":"INFO","code":"UNIT_STOPPED","severity":"info","msg":"Vehicle stopped at roadside"}
+{"ts":"2026-07-16T08:31:44Z","device":"van-03","type":"RECOVERY","code":"ENG_TEMP_CRIT_CLEAR","severity":"info","msg":"Temperature back in range after coolant top-up"}
+{"ts":"2026-07-16T08:45:12Z","device":"drone-02","type":"FAULT","code":"BATT_LOW","severity":"warning","msg":"Battery charge 18%, returning to base"}
+{"ts":"2026-07-16T08:58:03Z","device":"drone-02","type":"RECOVERY","code":"BATT_LOW_CLEAR","severity":"info","msg":"Battery swapped at base station"}
+{"ts":"2026-07-16T09:05:52Z","device":"truck-01","type":"FAULT","code":"COMMS_DEGRADED","severity":"serious","msg":"Uplink packet loss 22%"}
+{"ts":"2026-07-16T09:12:18Z","device":"truck-01","type":"FAULT","code":"COMMS_LOST","severity":"critical","msg":"Uplink lost — last known position stored"}
+{"ts":"2026-07-16T09:40:57Z","device":"truck-01","type":"RECOVERY","code":"COMMS_LOST_CLEAR","severity":"info","msg":"Uplink restored, 41 buffered records flushed"}
+{"ts":"2026-07-16T09:50:20Z","device":"sensor-hub-01","type":"FAULT","code":"COMMS_DEGRADED","severity":"serious","msg":"Gateway heartbeat intermittent"}
+{"ts":"2026-07-16T10:05:44Z","device":"sensor-hub-01","type":"RECOVERY","code":"COMMS_DEGRADED_CLEAR","severity":"info","msg":"Gateway link stable for 5 minutes"}
+{"ts":"2026-07-16T10:20:09Z","device":"van-03","type":"FAULT","code":"GPS_DRIFT","severity":"warning","msg":"GPS position variance 48m, urban canyon suspected"}
+{"ts":"2026-07-16T10:26:31Z","device":"van-03","type":"FAULT","code":"GPS_DRIFT","severity":"warning","msg":"GPS position variance 61m"}

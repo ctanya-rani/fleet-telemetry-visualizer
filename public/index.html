@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet Telemetry Visualizer</title>
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <h1>Fleet Telemetry</h1>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true" data-tab="live">Live Fleet</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="incidents">Incident Timeline</button>
+  </nav>
+  <div class="topbar-right">
+    <span id="conn" class="conn conn-off"><span class="conn-dot" aria-hidden="true"></span>connecting…</span>
+    <button id="theme-toggle" class="ghost-btn" title="Toggle light/dark theme">◐ theme</button>
+  </div>
+</header>
+
+<!-- ================= Live Fleet ================= -->
+<main id="tab-live" class="tab-panel">
+  <section class="sla-strip" aria-label="Fleet SLA (rolling 15 min window)">
+    <div class="tile" id="tile-uptime">
+      <div class="tile-head">Fleet uptime <span class="tile-target">target 99.5%</span></div>
+      <div class="tile-value">—</div>
+      <svg class="tile-spark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="tile-status"></div>
+    </div>
+    <div class="tile" id="tile-delivery">
+      <div class="tile-head">Message delivery <span class="tile-target">target 99%</span></div>
+      <div class="tile-value">—</div>
+      <svg class="tile-spark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="tile-status"></div>
+    </div>
+    <div class="tile" id="tile-latency">
+      <div class="tile-head">Latency p95 <span class="tile-target">target ≤ 250 ms</span></div>
+      <div class="tile-value">—</div>
+      <svg class="tile-spark" viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="tile-status"></div>
+    </div>
+    <div class="tile" id="tile-budget">
+      <div class="tile-head">Error budget left <span class="tile-target">15 min window</span></div>
+      <div class="tile-value">—</div>
+      <div class="budget-bar"><div class="budget-fill"></div></div>
+      <div class="tile-status"></div>
+    </div>
+  </section>
+
+  <section class="live-grid">
+    <div id="map" aria-label="Live fleet map"></div>
+    <aside class="side">
+      <div class="side-head">
+        <h2>Devices</h2>
+        <span id="fleet-counts" class="muted"></span>
+      </div>
+      <ul id="device-list" class="device-list"></ul>
+      <div id="device-detail" class="device-detail" hidden>
+        <div class="detail-head">
+          <h3 id="detail-title"></h3>
+          <button id="detail-close" class="ghost-btn" title="Close detail">✕</button>
+        </div>
+        <div id="detail-badges" class="detail-badges"></div>
+        <div class="detail-charts">
+          <figure><figcaption>Uplink latency (ms)</figcaption>
+            <svg id="spark-latency" viewBox="0 0 260 56" preserveAspectRatio="none"></svg></figure>
+          <figure><figcaption>Battery (%)</figcaption>
+            <svg id="spark-battery" viewBox="0 0 260 56" preserveAspectRatio="none"></svg></figure>
+          <figure><figcaption>Signal RSSI (dBm)</figcaption>
+            <svg id="spark-rssi" viewBox="0 0 260 56" preserveAspectRatio="none"></svg></figure>
+        </div>
+        <dl id="detail-facts" class="detail-facts"></dl>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<!-- ================= Incident Timeline ================= -->
+<main id="tab-incidents" class="tab-panel" hidden>
+  <section class="inc-controls">
+    <button id="btn-live-buffer" class="primary-btn">Analyze live recorder buffer</button>
+    <button id="btn-sample" class="ghost-btn">Load sample dump</button>
+    <label class="ghost-btn file-btn">Open recorder file…
+      <input id="file-input" type="file" accept=".jsonl,.json,.csv,.erf,.log,.txt" hidden>
+    </label>
+    <span class="muted">or paste a dump below (JSONL, CSV, or ERF — format auto-detected)</span>
+  </section>
+  <textarea id="paste-area" class="paste-area" rows="5"
+    placeholder='{"ts":"2026-07-16T08:02:11Z","device":"van-03","type":"FAULT","code":"ENG_TEMP_HIGH","severity":"warning","msg":"Engine temperature above threshold"}'></textarea>
+  <div class="inc-parse-row">
+    <button id="btn-parse" class="primary-btn">Reconstruct timeline</button>
+    <span id="parse-note" class="muted"></span>
+  </div>
+
+  <section id="inc-results" hidden>
+    <div class="sla-strip inc-stats">
+      <div class="tile"><div class="tile-head">Incidents</div><div class="tile-value" id="stat-total">—</div><div class="tile-status" id="stat-total-sub"></div></div>
+      <div class="tile"><div class="tile-head">Resolved</div><div class="tile-value" id="stat-resolved">—</div><div class="tile-status" id="stat-resolved-sub"></div></div>
+      <div class="tile"><div class="tile-head">MTTR</div><div class="tile-value" id="stat-mttr">—</div><div class="tile-status">mean time to recovery</div></div>
+      <div class="tile"><div class="tile-head">Worst device</div><div class="tile-value" id="stat-worst">—</div><div class="tile-status" id="stat-worst-sub"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Incident timeline</h2>
+        <div class="legend" id="timeline-legend"></div>
+      </div>
+      <div class="timeline-scroll"><svg id="timeline-svg"></svg></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Incidents</h2>
+      <div id="incident-cards"></div>
+    </div>
+
+    <details id="parse-errors-box" class="panel" hidden>
+      <summary>Skipped lines</summary>
+      <ul id="parse-errors"></ul>
+    </details>
+  </section>
+</main>
+
+<div id="tooltip" class="tooltip" hidden></div>
+
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

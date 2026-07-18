@@ -1,0 +1,11 @@
+#ERF1
+# Fleet event-recorder dump — pipe-framed: epochMs|device|TYPE|CODE|SEV|message
+1784188931000|van-03|FAULT|ENG_TEMP_HIGH|W|Engine temperature above threshold (104C)
+1784189645000|van-03|FAULT|ENG_TEMP_CRIT|C|Engine temperature 121C - derate engaged
+1784190704000|van-03|RECOVERY|ENG_TEMP_CRIT_CLEAR|I|Temperature back in range after coolant top-up
+1784191512000|drone-02|FAULT|BATT_LOW|W|Battery charge 18%, returning to base
+1784192283000|drone-02|RECOVERY|BATT_LOW_CLEAR|I|Battery swapped at base station
+1784192752000|truck-01|FAULT|COMMS_DEGRADED|S|Uplink packet loss 22%
+1784193138000|truck-01|FAULT|COMMS_LOST|C|Uplink lost - last known position stored
+1784194857000|truck-01|RECOVERY|COMMS_LOST_CLEAR|I|Uplink restored, 41 buffered records flushed
+1784197209000|van-03|FAULT|GPS_DRIFT|W|GPS position variance 48m, urban canyon suspected
