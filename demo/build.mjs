@@ -53,4 +53,5 @@ if (html.includes('src="/') || html.includes('href="/')) {
   throw new Error('demo index.html still references an absolute path — Pages serves under /<repo>/');
 }
 writeFileSync(path.join(out, 'index.html'), html);
+writeFileSync(path.join(out, '.nojekyll'), ''); // serve as-is, skip Jekyll
 console.log('static demo assembled in _site/');
