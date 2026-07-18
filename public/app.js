@@ -329,11 +329,11 @@ const parseNote = document.getElementById('parse-note');
 document.getElementById('btn-parse').addEventListener('click', () => analyzeText(pasteArea.value));
 document.getElementById('btn-live-buffer').addEventListener('click', async () => {
   parseNote.textContent = 'fetching live recorder buffer…';
-  const res = await fetch('/api/incidents/live');
+  const res = await fetch('api/incidents/live');
   renderTimelineResult(await res.json());
 });
 document.getElementById('btn-sample').addEventListener('click', async () => {
-  const res = await fetch('/sample-incident-log.jsonl');
+  const res = await fetch('sample-incident-log.jsonl');
   const text = await res.text();
   pasteArea.value = text;
   analyzeText(text);
@@ -349,7 +349,7 @@ document.getElementById('file-input').addEventListener('change', async (ev) => {
 async function analyzeText(text) {
   if (!text.trim()) { parseNote.textContent = 'nothing to parse — paste a dump or open a file'; return; }
   parseNote.textContent = 'parsing…';
-  const res = await fetch('/api/incidents/parse', {
+  const res = await fetch('api/incidents/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: text,

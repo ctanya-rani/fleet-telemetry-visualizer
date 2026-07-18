@@ -1,5 +1,9 @@
 # Fleet Telemetry Visualizer
 
+**Live demo:** <https://ctanya-rani.github.io/fleet-telemetry-visualizer/> —
+no install needed; the full dashboard runs in your browser with the fleet
+simulator generating telemetry client-side.
+
 Real-time IoT fleet dashboard plus an event-recorder forensics toolkit:
 
 - **Live fleet map** — device positions, movement trails, and health-colored
@@ -133,6 +137,16 @@ server/simulator.js    fleet simulator (movement, faults, recorder events)
 server/sla.js          rolling-window SLA tracker
 src/parser/            eventParser.js, timeline.js, cli.js (shared by server & CLI)
 public/                dashboard (vanilla JS + Leaflet)
+demo/                  static GitHub Pages build (browser-side backend + assembler)
 sample-data/           the same incident log in all three formats
 test/                  node:test unit tests
 ```
+
+## Static demo (GitHub Pages)
+
+`node demo/build.mjs` assembles `_site/` from the real dashboard, parser,
+simulator, and SLA modules — the only demo-specific code is a thin browser
+backend (`demo/demo-backend.js`) that replaces the WebSocket/API layer, plus
+a `node:events` shim wired up via an import map. The
+`.github/workflows/deploy-pages.yml` workflow runs the tests, builds the
+site, and deploys it to GitHub Pages on every push.
