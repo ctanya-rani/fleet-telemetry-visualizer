@@ -11,7 +11,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node --test",
-    "parse": "node src/parser/cli.js"
+    "parse": "node src/parser/cli.js",
+    "build": "npm test && node demo/build.mjs"
   },
   "engines": {
     "node": ">=18.17"
