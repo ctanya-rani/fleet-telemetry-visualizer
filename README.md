@@ -1,25 +1,19 @@
 # Fleet Telemetry Visualizer
 
-**Live demo:** <https://ctanya-rani.github.io/fleet-telemetry-visualizer/> —
-no install needed; the full dashboard runs in your browser with the fleet
-simulator generating telemetry client-side.
+**🚀 [Live demo on Vercel](https://fleet-telemetry-visualizer-ibwbvpukf-ctanya.vercel.app/)** — no install needed; the full dashboard runs in your browser with the fleet simulator generating telemetry client-side.
 
-Real-time IoT fleet dashboard plus an event-recorder forensics toolkit:
+A production-grade **real-time IoT fleet monitoring dashboard** featuring live GPS tracking, device health monitoring, SLA compliance tracking, and incident forensics. Built with vanilla JavaScript, Leaflet maps, Node.js backend, and a built-in fleet simulator.
 
-- **Live fleet map** — device positions, movement trails, and health-colored
-  markers streamed over WebSocket (Leaflet + OpenStreetMap tiles).
-- **Device health** — per-unit status (healthy / warning / serious / critical),
-  active fault codes, and latency / battery / RSSI sparklines.
-- **SLA tracking** — rolling 15-minute window against explicit SLOs: uptime,
-  message delivery rate, latency p95, and remaining error budget, per device
-  and fleet-wide.
-- **Event-recorder parser** — ingests recorder dumps in JSONL, CSV, or the
-  pipe-framed ERF format (auto-detected) and normalizes them into a single
-  event model.
-- **Incident timeline reconstructor** — rebuilds incidents from raw events
-  (detection → escalations → recovery), computes MTTR and severity stats, and
-  renders the result as an interactive SVG timeline in the UI or an ASCII
-  timeline in the terminal.
+**Core features:**
+
+- **Live fleet map** — real-time device positions, movement trails, and health-colored markers (Leaflet + OpenStreetMap). Click any device for detailed metrics.
+- **Fleet analytics dashboard** — at-a-glance fleet stats (total devices, online count, average health score, active fault count) with rolling SLA metrics.
+- **Device health monitoring** — per-unit status (healthy/warning/serious/critical), active fault codes, latency/battery/signal sparklines with interactive tooltips.
+- **SLA tracking** — rolling 15-minute window with real-time breaches: uptime %, message delivery %, latency p95, error budget remaining (fleet + per-device).
+- **Device search & filtering** — find devices by name/ID, filter by online status or active faults, sort by criticality.
+- **Incident forensics** — ingests JSONL/CSV/ERF event dumps (format auto-detected), reconstructs incidents with detection → escalation → recovery phases, calculates MTTR and per-device impact.
+- **Interactive timeline** — SVG Gantt chart with per-incident detail cards, phase breakdown, and severity tracking; export-ready for incident reports.
+- **Terminal CLI** — incident reconstruction from the command line with ASCII timeline output for automation/alerting pipelines.
 
 A built-in fleet simulator (16 vans / trucks / drones / sensor hubs around
 San Francisco) generates telemetry, faults, and recorder events, so the whole
@@ -142,11 +136,40 @@ sample-data/           the same incident log in all three formats
 test/                  node:test unit tests
 ```
 
-## Static demo (GitHub Pages)
+## Design & UX
+
+The dashboard is built for clarity and performance:
+
+- **Responsive layout** — adapts from desktop (map + sidebar) to mobile (stacked)
+- **Dark mode support** — follows OS preference or manual toggle; CSS custom properties for theme consistency
+- **Accessibility** — ARIA labels, keyboard navigation, focus indicators, respects `prefers-reduced-motion`
+- **Real-time updates** — WebSocket telemetry at 1 Hz; SLA metrics update every second
+- **Error resilience** — WebSocket auto-reconnect with exponential backoff; malformed records skipped with detailed error logs
+- **Status indicators** — pulsing connection dot, color-coded device health (good/warning/serious/critical), SLA breach warnings
+
+## Deployment
+
+### Vercel (production)
+```bash
+npm run build  # Runs tests + builds _site/
+vercel deploy  # Auto-deploys on git push to configured branch
+```
+
+The `vercel.json` configures build command and output directory.
+
+### Local development
+```bash
+npm install
+npm start           # Starts server at http://localhost:3000
+npm test            # Runs 24 unit tests (parser, timeline, SLA)
+npm run build       # Builds static site for Vercel
+```
+
+### Static site assembly
 
 `node demo/build.mjs` assembles `_site/` from the real dashboard, parser,
 simulator, and SLA modules — the only demo-specific code is a thin browser
 backend (`demo/demo-backend.js`) that replaces the WebSocket/API layer, plus
 a `node:events` shim wired up via an import map. The
-`.github/workflows/deploy-pages.yml` workflow runs the tests, builds the
-site, and deploys it to GitHub Pages on every push.
+`.github/workflows/deploy-pages.yml` workflow tests, builds the site, and
+deploys it on every push.
