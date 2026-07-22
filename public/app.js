@@ -101,11 +101,30 @@ const fleetHistory = { uptime: [], delivery: [], latency: [] };
 const HISTORY_MAX = 240;
 let selectedId = null;
 let lastDevices = [];
+let searchQuery = '';
+let activeFilter = 'all';
 
 function pushHistory(list, ts, v) {
   if (v == null || Number.isNaN(v)) return;
   list.push({ ts, v });
   if (list.length > HISTORY_MAX) list.shift();
+}
+
+function typeIcon(type) {
+  const icons = { van: '🚐', truck: '🚛', drone: '🚁', 'sensor-hub': '📡' };
+  return icons[type] ?? '📦';
+}
+
+function getFleetStats(devices) {
+  const online = devices.filter(d => d.online).length;
+  const avgHealth = devices.length > 0
+    ? devices.reduce((sum, d) => {
+        const healthMap = { good: 100, warning: 70, serious: 40, critical: 10 };
+        return sum + (healthMap[d.status] ?? 50);
+      }, 0) / devices.length
+    : 0;
+  const activeFaults = devices.filter(d => d.activeFault).length;
+  return { online, avgHealth: Math.round(avgHealth), activeFaults };
 }
 
 function onTelemetry(msg) {
@@ -124,9 +143,26 @@ function onTelemetry(msg) {
     pushHistory(fleetHistory.delivery, msg.ts, f.deliveryPct);
     pushHistory(fleetHistory.latency, msg.ts, f.latencyP95Ms);
   }
+  renderFleetStats(msg.devices, msg.sla);
   renderSlaTiles(msg.sla);
   renderDeviceList(msg.devices);
   renderDetail();
+}
+
+function renderFleetStats(devices, sla) {
+  const stats = getFleetStats(devices);
+  document.getElementById('stat-total-devices').textContent = devices.length;
+  document.getElementById('stat-devices-online').textContent = `${stats.online} online`;
+  document.getElementById('stat-active-faults').textContent = stats.activeFaults;
+  document.getElementById('stat-avg-health').textContent = `${stats.avgHealth}%`;
+  const healthLabel = stats.avgHealth > 80 ? 'excellent' : stats.avgHealth > 60 ? 'good' : stats.avgHealth > 40 ? 'fair' : 'poor';
+  document.getElementById('stat-avg-health-sub').textContent = healthLabel;
+  const f = sla?.fleet;
+  if (f && f.samples > 0) {
+    document.getElementById('stat-uptime-sla').textContent = `${f.uptimePct.toFixed(1)}%`;
+    const slaBreach = f.breaches.uptime;
+    document.getElementById('stat-uptime-sla-sub').textContent = slaBreach ? '⚠ SLO breach' : 'within SLO';
+  }
 }
 
 // ---------- SLA tiles --------------------------------------------------------
@@ -233,9 +269,18 @@ function renderDeviceList(devices) {
   document.getElementById('fleet-counts').textContent =
     `${devices.length} units · ${counts.critical} critical · ${counts.serious + counts.warning} degraded`;
 
+  let filtered = devices.filter(d => {
+    const matchesSearch = !searchQuery || d.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter =
+      activeFilter === 'all' ? true :
+      activeFilter === 'online' ? d.online :
+      activeFilter === 'faults' ? d.activeFault : true;
+    return matchesSearch && matchesFilter;
+  });
+
   const ul = document.getElementById('device-list');
   const order = { critical: 0, serious: 1, warning: 2, good: 3 };
-  const sorted = [...devices].sort((a, b) => (order[a.status] - order[b.status]) || a.id.localeCompare(b.id));
+  const sorted = [...filtered].sort((a, b) => (order[a.status] - order[b.status]) || a.id.localeCompare(b.id));
 
   ul.replaceChildren(...sorted.map((d) => {
     const li = document.createElement('li');
@@ -244,8 +289,8 @@ function renderDeviceList(devices) {
     li.innerHTML = `
       <span class="device-dot" style="background:${s.color}"></span>
       <span>
-        <span class="device-name">${d.id}</span>
-        <span class="device-sub"> ${d.online ? `${d.latencyMs} ms · ${d.batteryPct}%` : 'offline'}${d.activeFault ? ` · ${d.activeFault.code}` : ''}</span>
+        <span class="device-name">${typeIcon(d.type)} ${d.id}</span>
+        <span class="device-sub">${d.online ? `${d.latencyMs} ms · ${d.batteryPct}%` : 'offline'}${d.activeFault ? ` · ${d.activeFault.code}` : ''}</span>
       </span>
       ${badge(d.status)}`;
     li.addEventListener('click', () => selectDevice(d.id));
@@ -294,12 +339,31 @@ function renderDetail() {
     facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
 }
 
+// ---------- device search & filtering ----------------------------------------
+
+document.getElementById('device-search').addEventListener('input', (ev) => {
+  searchQuery = ev.target.value;
+  renderDeviceList(lastDevices);
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderDeviceList(lastDevices);
+  });
+});
+
 // ---------- WebSocket ---------------------------------------------------------
 
 const connEl = document.getElementById('conn');
 function setConn(on) {
   connEl.className = `conn ${on ? 'conn-on' : 'conn-off'}`;
-  connEl.innerHTML = `<span class="conn-dot" aria-hidden="true"></span>${on ? 'live' : 'reconnecting…'}`;
+  const connText = on ? 'live' : 'reconnecting…';
+  const dot = document.querySelector('.conn-dot');
+  if (dot) dot.parentElement.textContent = '';
+  connEl.innerHTML = `<span class="conn-dot" aria-hidden="true"></span><span id="conn-text">${connText}</span>`;
 }
 
 function connect() {

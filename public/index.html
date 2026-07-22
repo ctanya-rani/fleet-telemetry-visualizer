@@ -10,21 +10,56 @@
 <body>
 <header class="topbar">
   <div class="brand">
-    <span class="brand-mark" aria-hidden="true"></span>
-    <h1>Fleet Telemetry</h1>
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="8" cy="8" r="2" fill="currentColor"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Fleet Telemetry</h1>
+      <p class="brand-sub">Real-time IoT monitoring</p>
+    </div>
   </div>
   <nav class="tabs" role="tablist">
-    <button class="tab active" role="tab" aria-selected="true" data-tab="live">Live Fleet</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="incidents">Incident Timeline</button>
+    <button class="tab active" role="tab" aria-selected="true" data-tab="live">
+      <span class="tab-icon">📍</span> Live Fleet
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="incidents">
+      <span class="tab-icon">📊</span> Incidents
+    </button>
   </nav>
   <div class="topbar-right">
-    <span id="conn" class="conn conn-off"><span class="conn-dot" aria-hidden="true"></span>connecting…</span>
-    <button id="theme-toggle" class="ghost-btn" title="Toggle light/dark theme">◐ theme</button>
+    <span id="conn" class="conn conn-off"><span class="conn-dot" aria-hidden="true"></span><span id="conn-text">connecting…</span></span>
+    <button id="theme-toggle" class="ghost-btn" title="Toggle light/dark theme">🌓</button>
   </div>
 </header>
 
 <!-- ================= Live Fleet ================= -->
 <main id="tab-live" class="tab-panel">
+  <section class="fleet-stats-banner">
+    <div class="stat-box">
+      <span class="stat-label">Total Devices</span>
+      <span class="stat-value" id="stat-total-devices">—</span>
+      <span class="stat-sub" id="stat-devices-online">0 online</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">Avg Health</span>
+      <span class="stat-value" id="stat-avg-health">—</span>
+      <span class="stat-sub" id="stat-avg-health-sub">—</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">Active Faults</span>
+      <span class="stat-value" id="stat-active-faults">0</span>
+      <span class="stat-sub">on fleet</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">Uptime SLA</span>
+      <span class="stat-value" id="stat-uptime-sla">—</span>
+      <span class="stat-sub" id="stat-uptime-sla-sub">target 99.5%</span>
+    </div>
+  </section>
+
   <section class="sla-strip" aria-label="Fleet SLA (rolling 15 min window)">
     <div class="tile" id="tile-uptime">
       <div class="tile-head">Fleet uptime <span class="tile-target">target 99.5%</span></div>
@@ -58,6 +93,14 @@
       <div class="side-head">
         <h2>Devices</h2>
         <span id="fleet-counts" class="muted"></span>
+      </div>
+      <div class="side-filter">
+        <input type="text" id="device-search" class="device-search-input" placeholder="Search devices…" aria-label="Search devices">
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="online">Online</button>
+          <button class="filter-btn" data-filter="faults">Faults</button>
+        </div>
       </div>
       <ul id="device-list" class="device-list"></ul>
       <div id="device-detail" class="device-detail" hidden>
