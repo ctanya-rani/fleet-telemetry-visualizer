@@ -366,16 +366,40 @@ function setConn(on) {
   connEl.innerHTML = `<span class="conn-dot" aria-hidden="true"></span><span id="conn-text">${connText}</span>`;
 }
 
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 30;
+const RECONNECT_DELAY = 2000;
+
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   const ws = new WebSocket(`${proto}://${location.host}/ws`);
-  ws.onopen = () => setConn(true);
-  ws.onmessage = (ev) => {
-    const msg = JSON.parse(ev.data);
-    if (msg.type === 'telemetry') onTelemetry(msg);
+
+  ws.onopen = () => {
+    reconnectAttempts = 0;
+    setConn(true);
   };
-  ws.onclose = () => { setConn(false); setTimeout(connect, 2000); };
-  ws.onerror = () => ws.close();
+
+  ws.onmessage = (ev) => {
+    try {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'telemetry') onTelemetry(msg);
+    } catch (e) {
+      console.error('Failed to parse message:', e);
+    }
+  };
+
+  ws.onclose = () => {
+    setConn(false);
+    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      reconnectAttempts++;
+      setTimeout(connect, RECONNECT_DELAY);
+    }
+  };
+
+  ws.onerror = (e) => {
+    console.error('WebSocket error:', e);
+    ws.close();
+  };
 }
 connect();
 
@@ -413,14 +437,22 @@ document.getElementById('file-input').addEventListener('change', async (ev) => {
 async function analyzeText(text) {
   if (!text.trim()) { parseNote.textContent = 'nothing to parse — paste a dump or open a file'; return; }
   parseNote.textContent = 'parsing…';
-  const res = await fetch('api/incidents/parse', {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: text,
-  });
-  const data = await res.json();
-  if (!res.ok) { parseNote.textContent = `error: ${data.error}`; return; }
-  renderTimelineResult(data);
+  try {
+    const res = await fetch('api/incidents/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: text,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      parseNote.textContent = `⚠ ${data.error || 'parsing failed'}`;
+      return;
+    }
+    renderTimelineResult(data);
+  } catch (e) {
+    parseNote.textContent = `⚠ network error: ${e.message}`;
+    console.error('Parse error:', e);
+  }
 }
 
 function renderTimelineResult(data) {

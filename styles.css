@@ -58,12 +58,26 @@ body {
   background: var(--page);
   color: var(--text-primary);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 h1, h2, h3 { margin: 0; font-weight: 600; }
-h1 { font-size: 15px; }
+h1 { font-size: 16px; }
 h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
 .muted { color: var(--muted); font-size: 12px; }
+button, input, textarea, [role="button"] {
+  font-family: inherit;
+}
+button:focus, input:focus, textarea:focus, a:focus {
+  outline: 2px solid var(--series-1);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* ---------- top bar ---------- */
 .topbar {
@@ -260,8 +274,10 @@ button.ghost-btn, label.ghost-btn {
 .inc-phases .ph-ts { color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 500; }
 .inc-phases .ph-type { font-weight: 700; color: var(--text-secondary); }
 
-#parse-errors-box summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; }
-#parse-errors { font: 11.5px ui-monospace, Menlo, monospace; color: var(--muted); }
+#parse-errors-box summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; font-weight: 600; user-select: none; }
+#parse-errors-box summary:hover { color: var(--text-primary); }
+#parse-errors { font: 11.5px ui-monospace, Menlo, monospace; color: var(--muted); margin: 8px 0 0; }
+#parse-errors li { margin: 3px 0; }
 
 /* ---------- tooltip ---------- */
 .tooltip {
