@@ -358,17 +358,20 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 // ---------- WebSocket ---------------------------------------------------------
 
 const connEl = document.getElementById('conn');
-function setConn(on) {
-  connEl.className = `conn ${on ? 'conn-on' : 'conn-off'}`;
-  const connText = on ? 'live' : 'reconnecting…';
-  const dot = document.querySelector('.conn-dot');
-  if (dot) dot.parentElement.textContent = '';
-  connEl.innerHTML = `<span class="conn-dot" aria-hidden="true"></span><span id="conn-text">${connText}</span>`;
+const connTextEl = document.getElementById('conn-text');
+function setConn(state) {
+  connEl.className = `conn ${state === 'live' ? 'conn-on' : 'conn-off'}`;
+  connTextEl.textContent =
+    state === 'live' ? 'live' : state === 'gone' ? 'disconnected' : 'reconnecting…';
 }
 
+// Exponential backoff, capped — a tab left open overnight shouldn't hammer the
+// server once per 2 s forever, and it shouldn't silently claim "reconnecting"
+// after it has actually given up either.
+const RECONNECT_BASE_MS = 1000;
+const RECONNECT_MAX_MS = 30_000;
+const MAX_RECONNECT_ATTEMPTS = 12;
 let reconnectAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 30;
-const RECONNECT_DELAY = 2000;
 
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -376,30 +379,29 @@ function connect() {
 
   ws.onopen = () => {
     reconnectAttempts = 0;
-    setConn(true);
+    setConn('live');
   };
 
   ws.onmessage = (ev) => {
+    let msg;
     try {
-      const msg = JSON.parse(ev.data);
-      if (msg.type === 'telemetry') onTelemetry(msg);
-    } catch (e) {
-      console.error('Failed to parse message:', e);
+      msg = JSON.parse(ev.data);
+    } catch (err) {
+      console.error('dropping unparseable telemetry frame', err);
+      return;
     }
+    if (msg.type === 'telemetry') onTelemetry(msg);
   };
 
   ws.onclose = () => {
-    setConn(false);
-    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-      reconnectAttempts++;
-      setTimeout(connect, RECONNECT_DELAY);
-    }
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) { setConn('gone'); return; }
+    setConn('down');
+    const delay = Math.min(RECONNECT_BASE_MS * 2 ** reconnectAttempts, RECONNECT_MAX_MS);
+    reconnectAttempts++;
+    setTimeout(connect, delay);
   };
 
-  ws.onerror = (e) => {
-    console.error('WebSocket error:', e);
-    ws.close();
-  };
+  ws.onerror = () => ws.close();  // onclose runs next and owns the retry
 }
 connect();
 

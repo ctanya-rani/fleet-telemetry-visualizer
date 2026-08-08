@@ -32,22 +32,32 @@ const copies = [
 for (const [from, to] of copies) cpSync(path.join(root, from), path.join(out, to));
 cpSync(path.join(root, 'node_modules/leaflet/dist'), path.join(out, 'vendor/leaflet'), { recursive: true });
 
+/* Anchored rewrite that fails loudly. A silent no-op here would ship a demo
+ * missing its "simulated demo" badge or still pointing at the real backend. */
+function replaceOnce(src, anchor, next) {
+  if (!src.includes(anchor)) throw new Error(`demo build: anchor not found in index.html: ${anchor}`);
+  return src.replace(anchor, next);
+}
+
 let html = readFileSync(path.join(root, 'public', 'index.html'), 'utf8');
-html = html
-  .replaceAll('"/vendor/leaflet/', '"vendor/leaflet/')
-  .replace('"/styles.css"', '"styles.css"')
-  .replace(
-    '<h1>Fleet Telemetry</h1>',
-    '<h1>Fleet Telemetry</h1><span class="badge" title="All telemetry is generated in your browser by the built-in fleet simulator — no backend.">simulated demo</span>',
-  )
-  .replace(
-    '<script src="/app.js"></script>',
-    [
-      '<script type="importmap">{"imports":{"node:events":"./events-shim.js"}}</script>',
-      '<script type="module" src="demo-backend.js"></script>',
-      '<script defer src="app.js"></script>',
-    ].join('\n'),
-  );
+html = html.replaceAll('"/vendor/leaflet/', '"vendor/leaflet/');
+html = replaceOnce(html, '"/styles.css"', '"styles.css"');
+// The badge goes after the subtitle, as the last child of the brand text column.
+html = replaceOnce(
+  html,
+  '<p class="brand-sub">Real-time IoT monitoring</p>',
+  '<p class="brand-sub">Real-time IoT monitoring</p>' +
+  '<span class="badge" title="All telemetry is generated in your browser by the built-in fleet simulator — no backend.">simulated demo</span>',
+);
+html = replaceOnce(
+  html,
+  '<script src="/app.js"></script>',
+  [
+    '<script type="importmap">{"imports":{"node:events":"./events-shim.js"}}</script>',
+    '<script type="module" src="demo-backend.js"></script>',
+    '<script defer src="app.js"></script>',
+  ].join('\n'),
+);
 
 if (html.includes('src="/') || html.includes('href="/')) {
   throw new Error('demo index.html still references an absolute path — Pages serves under /<repo>/');

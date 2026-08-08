@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fleet Telemetry Visualizer</title>
+<meta name="description" content="Real-time IoT fleet dashboard: live map, device health, rolling SLA tracking, and event-recorder incident timeline reconstruction.">
+<!-- inline so it works identically from the server and the static demo build -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%232a78d6'/%3E%3Ccircle cx='8' cy='8' r='4.5' fill='none' stroke='white' stroke-width='1.5'/%3E%3Ccircle cx='8' cy='8' r='1.75' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="/styles.css">
 </head>
@@ -40,22 +43,22 @@
   <section class="fleet-stats-banner" aria-label="Fleet summary statistics">
     <div class="stat-box">
       <span class="stat-label">Total Devices</span>
-      <span class="stat-value" id="stat-total-devices" aria-live="polite">—</span>
+      <span class="stat-value" id="stat-total-devices">—</span>
       <span class="stat-sub" id="stat-devices-online">0 online</span>
     </div>
     <div class="stat-box">
       <span class="stat-label">Avg Health</span>
-      <span class="stat-value" id="stat-avg-health" aria-live="polite">—</span>
+      <span class="stat-value" id="stat-avg-health">—</span>
       <span class="stat-sub" id="stat-avg-health-sub">—</span>
     </div>
     <div class="stat-box">
       <span class="stat-label">Active Faults</span>
-      <span class="stat-value" id="stat-active-faults" aria-live="polite">0</span>
+      <span class="stat-value" id="stat-active-faults">0</span>
       <span class="stat-sub">on fleet</span>
     </div>
     <div class="stat-box">
       <span class="stat-label">Uptime SLA</span>
-      <span class="stat-value" id="stat-uptime-sla" aria-live="polite">—</span>
+      <span class="stat-value" id="stat-uptime-sla">—</span>
       <span class="stat-sub" id="stat-uptime-sla-sub">target 99.5%</span>
     </div>
   </section>
