@@ -1,6 +1,6 @@
 # Fleet Telemetry Visualizer
 
-**🚀 [Live demo on Vercel](https://fleet-telemetry-visualizer-ibwbvpukf-ctanya.vercel.app/)** — no install needed; the full dashboard runs in your browser with the fleet simulator generating telemetry client-side.
+**🚀 [Live demo on GitHub Pages](https://ctanya-rani.github.io/fleet-telemetry-visualizer/)** — no install needed; the full dashboard runs in your browser with the fleet simulator generating telemetry client-side.
 
 A production-grade **real-time IoT fleet monitoring dashboard** featuring live GPS tracking, device health monitoring, SLA compliance tracking, and incident forensics. Built with vanilla JavaScript, Leaflet maps, Node.js backend, and a built-in fleet simulator.
 
@@ -149,13 +149,19 @@ The dashboard is built for clarity and performance:
 
 ## Deployment
 
-### Vercel (production)
-```bash
-npm run build  # Runs tests + builds _site/
-vercel deploy  # Auto-deploys on git push to configured branch
-```
+### GitHub Pages (production)
 
-The `vercel.json` configures build command and output directory.
+The site auto-deploys to GitHub Pages on every push to `claude/iot-fleet-telemetry-viz-8j9in9`:
+
+1. GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) runs tests
+2. Builds static site with `node demo/build.mjs`
+3. Deploys to `gh-pages` branch
+4. GitHub Pages serves at: https://ctanya-rani.github.io/fleet-telemetry-visualizer/
+
+**First-time setup:** Visit repo **Settings > Pages** and set:
+- Source: Deploy from a branch
+- Branch: `gh-pages` / root
+- Save (auto-enables if gh-pages exists)
 
 ### Local development
 ```bash
