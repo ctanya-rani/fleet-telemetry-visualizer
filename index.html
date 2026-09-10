@@ -98,7 +98,10 @@
         <span id="fleet-counts" class="muted"></span>
       </div>
       <div class="side-filter">
-        <input type="text" id="device-search" class="device-search-input" placeholder="Search devices…" aria-label="Search devices">
+        <div class="search-wrapper">
+          <input type="text" id="device-search" class="device-search-input" placeholder="Search devices…" aria-label="Search devices">
+          <button id="search-clear" class="search-clear-btn" title="Clear search" hidden>✕</button>
+        </div>
         <div class="filter-buttons">
           <button class="filter-btn active" data-filter="all">All</button>
           <button class="filter-btn" data-filter="online">Online</button>
@@ -131,7 +134,7 @@
   <section class="inc-controls">
     <button id="btn-live-buffer" class="primary-btn">Analyze live recorder buffer</button>
     <button id="btn-sample" class="ghost-btn">Load sample dump</button>
-    <label class="ghost-btn file-btn">Open recorder file…
+    <label class="ghost-btn file-btn" id="file-label">Open recorder file…
       <input id="file-input" type="file" accept=".jsonl,.json,.csv,.erf,.log,.txt" hidden>
     </label>
     <span class="muted">or paste a dump below (JSONL, CSV, or ERF — format auto-detected)</span>

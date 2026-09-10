@@ -93,7 +93,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 1200;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
 }
+@media (max-width: 600px) { .topbar { gap: 12px; padding: 10px 16px; } }
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand-mark {
   width: 24px; height: 24px; border-radius: 8px; background: linear-gradient(135deg, var(--series-1), #1a5db5);
@@ -132,10 +134,14 @@ button.ghost-btn, label.ghost-btn {
   padding: 8px 16px; border-radius: 7px; cursor: pointer; transition: all var(--transition);
   box-shadow: 0 2px 4px rgba(42, 120, 214, 0.2);
 }
-.primary-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(42, 120, 214, 0.3); }
-.primary-btn:active { transform: translateY(0); }
+.primary-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(42, 120, 214, 0.3); }
+.primary-btn:active:not(:disabled) { transform: translateY(0); }
+.primary-btn:disabled, .ghost-btn:disabled {
+  opacity: 0.6; cursor: not-allowed;
+}
 
 .tab-panel { padding: 16px 20px 28px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 600px) { .tab-panel { padding: 12px 16px 24px; } }
 
 /* ---------- fleet stats banner ---------- */
 .fleet-stats-banner {
@@ -201,12 +207,18 @@ button.ghost-btn, label.ghost-btn {
 }
 .side-head { display: flex; align-items: baseline; justify-content: space-between; }
 .side-filter { display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--grid); }
+.search-wrapper { position: relative; display: flex; align-items: center; }
 .device-search-input {
-  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
-  font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 7px;
+  width: 100%; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
+  font: inherit; font-size: 13px; padding: 7px 32px 7px 10px; border-radius: 7px;
   transition: all var(--transition);
 }
 .device-search-input:focus { outline: none; border-color: var(--series-1); box-shadow: 0 0 0 3px rgba(42, 120, 214, 0.1); }
+.search-clear-btn {
+  position: absolute; right: 4px; border: none; background: transparent; color: var(--text-secondary);
+  font: inherit; font-size: 16px; padding: 4px 6px; cursor: pointer; transition: all var(--transition);
+}
+.search-clear-btn:hover { color: var(--text-primary); }
 .filter-buttons { display: flex; gap: 6px; }
 .filter-btn {
   border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
@@ -247,6 +259,7 @@ button.ghost-btn, label.ghost-btn {
 
 /* ---------- incidents tab ---------- */
 .inc-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+@media (max-width: 600px) { .inc-controls { gap: 6px; } .inc-controls button, .inc-controls label { font-size: 12px; padding: 6px 12px; } }
 .file-btn { display: inline-flex; }
 .paste-area {
   width: 100%; resize: vertical; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
