@@ -194,12 +194,13 @@ function renderSlaTiles(sla) {
   sparkline(la.querySelector('.tile-spark'), fleetHistory.latency, {});
 
   const bu = document.getElementById('tile-budget');
-  bu.querySelector('.tile-value').textContent = `${f.errorBudgetPct.toFixed(1)}%`;
+  const budgetPct = Math.max(0, Math.min(100, f.errorBudgetPct));
+  bu.querySelector('.tile-value').textContent = `${budgetPct.toFixed(1)}%`;
   const fill = bu.querySelector('.budget-fill');
-  fill.style.width = `${Math.max(0, Math.min(100, f.errorBudgetPct))}%`;
-  fill.style.background = f.errorBudgetPct > 40 ? 'var(--status-good)'
-    : f.errorBudgetPct > 10 ? 'var(--status-warning)' : 'var(--status-critical)';
-  tileStatus(bu.querySelector('.tile-status'), f.errorBudgetPct > 10, 'budget healthy', 'budget nearly spent');
+  fill.style.width = `${budgetPct}%`;
+  fill.style.background = budgetPct > 40 ? 'var(--status-good)'
+    : budgetPct > 10 ? 'var(--status-warning)' : 'var(--status-critical)';
+  tileStatus(bu.querySelector('.tile-status'), budgetPct > 10, 'budget healthy', 'budget nearly spent');
 }
 
 // ---------- sparklines (single series, blue; hover = nearest-point dot) ------
@@ -284,7 +285,10 @@ function renderDeviceList(devices) {
 
   ul.replaceChildren(...sorted.map((d) => {
     const li = document.createElement('li');
-    li.className = 'device-row' + (d.id === selectedId ? ' selected' : '');
+    const isSelected = d.id === selectedId;
+    li.className = 'device-row' + (isSelected ? ' selected' : '');
+    li.setAttribute('role', 'button');
+    li.setAttribute('aria-selected', String(isSelected));
     const s = STATUS[d.status] ?? STATUS.good;
     li.innerHTML = `
       <span class="device-dot" style="background:${s.color}"></span>
@@ -309,6 +313,12 @@ function selectDevice(id) {
   renderDetail();
 }
 document.getElementById('detail-close').addEventListener('click', () => selectDevice(selectedId));
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && selectedId !== null) {
+    selectDevice(selectedId);
+    ev.preventDefault();
+  }
+});
 
 function renderDetail() {
   if (!selectedId) return;
@@ -341,9 +351,21 @@ function renderDetail() {
 
 // ---------- device search & filtering ----------------------------------------
 
-document.getElementById('device-search').addEventListener('input', (ev) => {
+const searchInput = document.getElementById('device-search');
+const searchClearBtn = document.getElementById('search-clear');
+
+searchInput.addEventListener('input', (ev) => {
   searchQuery = ev.target.value;
+  searchClearBtn.hidden = !searchQuery;
   renderDeviceList(lastDevices);
+});
+
+searchClearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  searchQuery = '';
+  searchClearBtn.hidden = true;
+  renderDeviceList(lastDevices);
+  searchInput.focus();
 });
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -433,12 +455,22 @@ document.getElementById('file-input').addEventListener('change', async (ev) => {
   if (!file) return;
   const text = await file.text();
   pasteArea.value = text;
+  document.getElementById('file-label').textContent = `✓ ${file.name}`;
   analyzeText(text);
+  ev.target.value = '';
 });
 
 async function analyzeText(text) {
   if (!text.trim()) { parseNote.textContent = 'nothing to parse — paste a dump or open a file'; return; }
   parseNote.textContent = 'parsing…';
+  const parseBtn = document.getElementById('btn-parse');
+  const liveBtn = document.getElementById('btn-live-buffer');
+  const sampleBtn = document.getElementById('btn-sample');
+  const fileInput = document.getElementById('file-input');
+  const oldButtonState = { parse: parseBtn.disabled, live: liveBtn.disabled, sample: sampleBtn.disabled, file: fileInput.disabled };
+
+  parseBtn.disabled = liveBtn.disabled = sampleBtn.disabled = fileInput.disabled = true;
+
   try {
     const res = await fetch('api/incidents/parse', {
       method: 'POST',
@@ -454,6 +486,11 @@ async function analyzeText(text) {
   } catch (e) {
     parseNote.textContent = `⚠ network error: ${e.message}`;
     console.error('Parse error:', e);
+  } finally {
+    parseBtn.disabled = oldButtonState.parse;
+    liveBtn.disabled = oldButtonState.live;
+    sampleBtn.disabled = oldButtonState.sample;
+    fileInput.disabled = oldButtonState.file;
   }
 }
 
